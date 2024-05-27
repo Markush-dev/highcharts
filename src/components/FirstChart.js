@@ -35,6 +35,7 @@ function FirstChart() {
 
     const lastValue = filteredData.last_value;
 
+
     const options = {
         chart: {
             height: 800,
@@ -155,6 +156,8 @@ function FirstChart() {
             },
         ],
         rangeSelector: {
+            selected: 1,
+            inputEnabled: true,
             buttonTheme: {
                 fill: 'var(--highcharts-neutral-color-20)',
                 stroke: 'var(--highcharts-neutral-color-20)',
@@ -178,6 +181,37 @@ function FirstChart() {
                     },
                 },
             },
+            events: {
+                afterSetExtremes: function (e) {
+                    const { min, max } = e.target;
+                    const filtered = {
+                        ...data,
+                        iv: {
+                            ...data.iv,
+                            x: data.iv.x.filter(s => new Date(s).getTime() >= min && new Date(s).getTime() <= max),
+                            y: data.iv.y.filter((_, index) => {
+                                const date = new Date(data.iv.x[index]).getTime();
+                                return date >= min && date <= max;
+                            })
+                        },
+                        hist_volatility: {
+                            ...data.hist_volatility,
+                            y: data.hist_volatility.y.filter((_, index) => {
+                                const date = new Date(data.iv.x[index]).getTime();
+                                return date >= min && date <= max;
+                            })
+                        },
+                        iv_hist_vol_diff: {
+                            ...data.iv_hist_vol_diff,
+                            y: data.iv_hist_vol_diff.y.filter((_, index) => {
+                                const date = new Date(data.iv.x[index]).getTime();
+                                return date >= min && date <= max;
+                            })
+                        }
+                    };
+                    setFilteredData(filtered);
+                }
+            }
         },
         navigator: {
             maskFill: 'var(--highcharts-highlight-color-60)',
